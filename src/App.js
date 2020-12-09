@@ -41,19 +41,17 @@ export default class App extends Component {
       canvas: null,
       ctx: null,
       bInstantDraw: false,
-      MOVES_PER_UPDATE: 20, //How many pixels get placed down
+      MOVES_PER_UPDATE: 20,
       bDone: false,
-      width: null, //canvas width
-      height: 0, //canvas height
+      width: 0,
+      height: 0,
       colorSteps: 32,
       imageData: null,
       prevPositions: [],
     };
   }
-
-  // This is called when the page loads
   Init = () => {
-    this.setState({ canvas: document.getElementById("canvas") }); // Get the HTML element with the ID of 'canvas'
+    this.setState({ canvas: document.getElementById("canvas") });
     this.setState({ width: this.state.canvas.width });
     this.setState({ height: this.state.canvas.height });
     this.setState({ ctx: this.state.canvas.getContext("2d") });
@@ -62,9 +60,9 @@ export default class App extends Component {
         this.state.width,
         this.state.height
       ),
-    }); //Needed to do pixel manipulation
-    grid = []; //Grid for the labyrinth algorithm
-    colors = []; //Array of all colors
+    });
+    grid = [];
+    colors = [];
     for (var r = 1; r < this.state.colorSteps; r++) {
       for (var g = 1; g < this.state.colorSteps; g++) {
         for (var b = 1; b < this.state.colorSteps; b++) {
@@ -75,14 +73,13 @@ export default class App extends Component {
               (b * 255) / (this.state.colorSteps - 1)
             )
           );
-          //Fill the array with all colors
         }
       }
     }
     for (var x = 0; x < this.state.width; x++) {
       grid.push(new Array());
       for (var y = 0; y < this.state.height; y++) {
-        grid[x].push(0); //Set up the grid
+        grid[x].push(0);
       }
     }
     currentPos = new Point(
@@ -101,41 +98,36 @@ export default class App extends Component {
     );
     setInterval(this.GameLoop, 1000 / this.state.FPS);
   };
-  // Main program loop
   GameLoop = () => {
     this.Update();
     this.Draw();
   };
-  // Game logic goes here
   Update = () => {
     if (!this.state.bDone) {
       var counter = this.state.MOVES_PER_UPDATE;
       while (counter > 0) {
-        //For speeding up the drawing
         var notMoved = true;
         while (notMoved) {
-          var availableSpaces = this.CheckForSpaces(grid); //Find available spaces
+          var availableSpaces = this.CheckForSpaces(grid);
           if (availableSpaces.length > 0) {
-            //If there are available spaces
             this.setState({
               prevPositions: this.state.prevPositions.concat(currentPos),
-            }); //add old position to prevPosition array
+            });
             currentPos =
               availableSpaces[
                 Math.floor(Math.random() * availableSpaces.length)
               ];
-            //pick a random available space
-            grid[currentPos.x][currentPos.y] = 1; //set that space to filled
+            grid[currentPos.x][currentPos.y] = 1;
             this.ChangePixel(
               this.state.imageData,
               currentPos.x,
               currentPos.y,
               colors.pop()
-            ); //pop color of the array and put it in that space
+            );
             notMoved = false;
           } else {
             if (this.state.prevPositions.length != 0) {
-              currentPos = this.state.prevPositions.pop(); //pop to previous position where spaces are available
+              currentPos = this.state.prevPositions.pop();
             } else {
               this.state.ctx.putImageData(this.state.imageData, 0, 0);
               this.setState({ bDone: true });
@@ -148,7 +140,6 @@ export default class App extends Component {
     }
   };
   Draw = () => {
-    // Clear the screen
     this.state.ctx.clearRect(
       0,
       0,
@@ -165,7 +156,6 @@ export default class App extends Component {
     this.state.ctx.putImageData(this.state.imageData, 0, 0);
   };
   CheckForSpaces = (inGrid) => {
-    //Checks for available spaces then returns back all available spaces
     var availableSpaces = [];
     if (currentPos.x > 0) {
       if (inGrid[currentPos.x - 1][currentPos.y] == 0) {
@@ -203,7 +193,6 @@ export default class App extends Component {
   };
 
   ChangePixel = (data, x, y, color) => {
-    //Quick function to simplify changing pixels
     if (color == undefined || color == "undefined" || color == null) {
       return;
     } else {
@@ -233,9 +222,7 @@ export default class App extends Component {
           <h6 style={{ fontSize: "15px" }}>Thank you for your patience :) </h6>
         </div>
         <body onLoad="this.state.Init">
-          <canvas id="canvas" width="256" height="128">
-            Sorry your browser does not support Canvas, try Firefox or Chrome!
-          </canvas>
+          <canvas id="canvas" width="256" height="128"></canvas>
         </body>
       </div>
     );
