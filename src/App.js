@@ -13,8 +13,8 @@ function Color(r, g, b) {
   this.g = g;
   this.b = b;
   this.hue = Math.atan2(
-    Math.sqrt(3) * (this.g - this.b),
-    2 * this.r - this.g,
+    Math.sqrt(6) * (this.g - this.b),
+    5 * this.r - this.g,
     this.b
   );
   this.min = Math.min(this.r, this.g);
@@ -37,11 +37,11 @@ export default class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      FPS: 60,
+      FPS: 150,
       canvas: null,
       ctx: null,
       bInstantDraw: false,
-      MOVES_PER_UPDATE: 20,
+      MOVES_PER_UPDATE: 500,
       bDone: false,
       width: 0,
       height: 0,
@@ -82,10 +82,7 @@ export default class App extends Component {
         grid[x].push(0);
       }
     }
-    currentPos = new Point(
-      Math.floor(Math.random() * this.state.width),
-      Math.floor(Math.random() * this.state.height)
-    );
+    currentPos = new Point(Math.floor(0.9), Math.floor(0.1));
     grid[currentPos.x][currentPos.y] = 1;
     this.setState({
       prevPositions: this.state.prevPositions.concat(currentPos),
@@ -96,7 +93,7 @@ export default class App extends Component {
       currentPos.y,
       colors.pop()
     );
-    setInterval(this.GameLoop, 1000 / this.state.FPS);
+    setInterval(this.GameLoop, 200 / this.state.FPS);
   };
   GameLoop = () => {
     this.Update();
@@ -114,9 +111,7 @@ export default class App extends Component {
               prevPositions: this.state.prevPositions.concat(currentPos),
             });
             currentPos =
-              availableSpaces[
-                Math.floor(Math.random() * availableSpaces.length)
-              ];
+              availableSpaces[Math.floor(0.9 * availableSpaces.length)];
             grid[currentPos.x][currentPos.y] = 1;
             this.ChangePixel(
               this.state.imageData,
@@ -140,21 +135,9 @@ export default class App extends Component {
     }
   };
   Draw = () => {
-    this.state.ctx.clearRect(
-      0,
-      0,
-      this.state.ctx.canvas.width,
-      this.state.ctx.canvas.height
-    );
-    this.state.ctx.fillStyle = "#000000";
-    this.state.ctx.fillRect(
-      0,
-      0,
-      this.state.ctx.canvas.width,
-      this.state.ctx.canvas.height
-    );
     this.state.ctx.putImageData(this.state.imageData, 0, 0);
   };
+
   CheckForSpaces = (inGrid) => {
     var availableSpaces = [];
     if (currentPos.x > 0) {
@@ -188,7 +171,6 @@ export default class App extends Component {
     } else if (inGrid[currentPos.x][0] == 0) {
       availableSpaces.push(new Point(currentPos.x, 0));
     }
-
     return availableSpaces;
   };
 
