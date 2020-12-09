@@ -41,7 +41,7 @@ export default class App extends Component {
       canvas: null,
       ctx: null,
       bInstantDraw: false,
-      MOVES_PER_UPDATE: 100, //How many pixels get placed down
+      MOVES_PER_UPDATE: 20, //How many pixels get placed down
       bDone: false,
       width: null, //canvas width
       height: 0, //canvas height
@@ -56,7 +56,7 @@ export default class App extends Component {
     this.setState({ canvas: document.getElementById("canvas") }); // Get the HTML element with the ID of 'canvas'
     this.setState({ width: this.state.canvas.width });
     this.setState({ height: this.state.canvas.height });
-    this.setState({ ctx: this.state.canvas.getContext("2d") }); // This is necessary, but I don't know exactly what it does
+    this.setState({ ctx: this.state.canvas.getContext("2d") });
     this.setState({
       imageData: this.state.ctx.createImageData(
         this.state.width,
@@ -220,6 +220,18 @@ export default class App extends Component {
   render() {
     return (
       <div>
+        <div
+          style={{
+            marginTop: "20px",
+            "text-align": "center",
+            background: "#1abc9c",
+            color: "white",
+            marginBottom: "40px",
+          }}
+        >
+          <h2 style={{ fontSize: "30px" }}>Coding Test</h2>
+          <h6 style={{ fontSize: "15px" }}>Thank you for your patience :) </h6>
+        </div>
         <body onLoad="this.state.Init">
           <canvas id="canvas" width="256" height="128">
             Sorry your browser does not support Canvas, try Firefox or Chrome!
