@@ -2,16 +2,16 @@ import logo from "./logo.svg";
 import "./App.css";
 import { Component } from "react";
 
-var grid, colors, currentPos;
-function Point(xIn, yIn) {
+var location, grid, colors;
+function Coordinates(xIn, yIn) {
   this.x = xIn;
   this.y = yIn;
 }
 
-function Color(r, g, b) {
-  this.r = r;
-  this.g = g;
-  this.b = b;
+function GenerateColor(red, green, blue) {
+  this.r = red;
+  this.g = green;
+  this.b = blue;
   this.hue = Math.atan2(
     Math.sqrt(6) * (this.g - this.b),
     5 * this.r - this.g,
@@ -37,20 +37,19 @@ export default class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      FPS: 150,
-      canvas: null,
-      ctx: null,
-      bInstantDraw: false,
-      MOVES_PER_UPDATE: 500,
-      bDone: false,
+      checker: false,
+      componentSteps: 32,
+      movementUpdate: 500,
       width: 0,
       height: 0,
-      colorSteps: 32,
+      frameRate: 150,
       imageData: null,
       prevPositions: [],
+      ctx: null,
+      canvas: null,
     };
   }
-  Init = () => {
+  Load = () => {
     this.setState({ canvas: document.getElementById("canvas") });
     this.setState({ width: this.state.canvas.width });
     this.setState({ height: this.state.canvas.height });
@@ -63,14 +62,14 @@ export default class App extends Component {
     });
     grid = [];
     colors = [];
-    for (var r = 1; r < this.state.colorSteps; r++) {
-      for (var g = 1; g < this.state.colorSteps; g++) {
-        for (var b = 1; b < this.state.colorSteps; b++) {
+    for (var r = 1; r < this.state.componentSteps; r++) {
+      for (var g = 1; g < this.state.componentSteps; g++) {
+        for (var b = 1; b < this.state.componentSteps; b++) {
           colors.push(
-            new Color(
-              (r * 255) / (this.state.colorSteps - 1),
-              (g * 255) / (this.state.colorSteps - 1),
-              (b * 255) / (this.state.colorSteps - 1)
+            new GenerateColor(
+              (r * 255) / (this.state.componentSteps - 1),
+              (g * 255) / (this.state.componentSteps - 1),
+              (b * 255) / (this.state.componentSteps - 1)
             )
           );
         }
@@ -82,50 +81,50 @@ export default class App extends Component {
         grid[x].push(0);
       }
     }
-    currentPos = new Point(Math.floor(0.9), Math.floor(0.1));
-    grid[currentPos.x][currentPos.y] = 1;
+    location = new Coordinates(Math.floor(0.9), Math.floor(0.1));
+    grid[location.x][location.y] = 1;
     this.setState({
-      prevPositions: this.state.prevPositions.concat(currentPos),
+      prevPositions: this.state.prevPositions.concat(location),
     });
-    this.ChangePixel(
+    this.ImagePixelChange(
       this.state.imageData,
-      currentPos.x,
-      currentPos.y,
+      location.x,
+      location.y,
       colors.pop()
     );
-    setInterval(this.GameLoop, 200 / this.state.FPS);
+    setInterval(this.Pattern, 200 / this.state.frameRate);
   };
-  GameLoop = () => {
-    this.Update();
-    this.Draw();
+  Pattern = () => {
+    this.Add();
+    this.PrintPattern();
   };
-  Update = () => {
-    if (!this.state.bDone) {
-      var counter = this.state.MOVES_PER_UPDATE;
+  Add = () => {
+    if (!this.state.checker) {
+      var counter = this.state.movementUpdate;
       while (counter > 0) {
         var notMoved = true;
         while (notMoved) {
-          var availableSpaces = this.CheckForSpaces(grid);
+          var availableSpaces = this.FreeSpaces(grid);
           if (availableSpaces.length > 0) {
             this.setState({
-              prevPositions: this.state.prevPositions.concat(currentPos),
+              prevPositions: this.state.prevPositions.concat(location),
             });
-            currentPos =
+            location =
               availableSpaces[Math.floor(0.9 * availableSpaces.length)];
-            grid[currentPos.x][currentPos.y] = 1;
-            this.ChangePixel(
+            grid[location.x][location.y] = 1;
+            this.ImagePixelChange(
               this.state.imageData,
-              currentPos.x,
-              currentPos.y,
+              location.x,
+              location.y,
               colors.pop()
             );
             notMoved = false;
           } else {
             if (this.state.prevPositions.length != 0) {
-              currentPos = this.state.prevPositions.pop();
+              location = this.state.prevPositions.pop();
             } else {
               this.state.ctx.putImageData(this.state.imageData, 0, 0);
-              this.setState({ bDone: true });
+              this.setState({ checker: true });
               break;
             }
           }
@@ -134,47 +133,44 @@ export default class App extends Component {
       }
     }
   };
-  Draw = () => {
+  PrintPattern = () => {
     this.state.ctx.putImageData(this.state.imageData, 0, 0);
   };
 
-  CheckForSpaces = (inGrid) => {
+  FreeSpaces = (inGrid) => {
     var availableSpaces = [];
-    if (currentPos.x > 0) {
-      if (inGrid[currentPos.x - 1][currentPos.y] == 0) {
-        availableSpaces.push(new Point(currentPos.x - 1, currentPos.y));
+    if (location.x > 0) {
+      if (inGrid[location.x - 1][location.y] == 0) {
+        availableSpaces.push(new Coordinates(location.x - 1, location.y));
       }
-    } else if (inGrid[this.state.width - 1][currentPos.y] == 0) {
-      availableSpaces.push(new Point(this.state.width - 1, currentPos.y));
+    } else if (inGrid[this.state.width - 1][location.y] == 0) {
+      availableSpaces.push(new Coordinates(this.state.width - 1, location.y));
     }
 
-    if (currentPos.x < this.state.width - 1) {
-      if (inGrid[currentPos.x + 1][currentPos.y] == 0) {
-        availableSpaces.push(new Point(currentPos.x + 1, currentPos.y));
+    if (location.x < this.state.width - 1) {
+      if (inGrid[location.x + 1][location.y] == 0) {
+        availableSpaces.push(new Coordinates(location.x + 1, location.y));
       }
-    } else if (inGrid[0][currentPos.y] == 0) {
-      availableSpaces.push(new Point(0, currentPos.y));
+    } else if (inGrid[0][location.y] == 0) {
+      availableSpaces.push(new Coordinates(0, location.y));
     }
-
-    if (currentPos.y > 0) {
-      if (inGrid[currentPos.x][currentPos.y - 1] == 0) {
-        availableSpaces.push(new Point(currentPos.x, currentPos.y - 1));
+    if (location.y > 0) {
+      if (inGrid[location.x][location.y - 1] == 0) {
+        availableSpaces.push(new Coordinates(location.x, location.y - 1));
       }
-    } else if (inGrid[currentPos.x][this.state.height - 1] == 0) {
-      availableSpaces.push(new Point(currentPos.x, this.state.height - 1));
+    } else if (inGrid[location.x][this.state.height - 1] == 0) {
+      availableSpaces.push(new Coordinates(location.x, this.state.height - 1));
     }
-
-    if (currentPos.y < this.state.height - 1) {
-      if (inGrid[currentPos.x][currentPos.y + 1] == 0) {
-        availableSpaces.push(new Point(currentPos.x, currentPos.y + 1));
+    if (location.y < this.state.height - 1) {
+      if (inGrid[location.x][location.y + 1] == 0) {
+        availableSpaces.push(new Coordinates(location.x, location.y + 1));
       }
-    } else if (inGrid[currentPos.x][0] == 0) {
-      availableSpaces.push(new Point(currentPos.x, 0));
+    } else if (inGrid[location.x][0] == 0) {
+      availableSpaces.push(new Coordinates(location.x, 0));
     }
     return availableSpaces;
   };
-
-  ChangePixel = (data, x, y, color) => {
+  ImagePixelChange = (data, x, y, color) => {
     if (color == undefined || color == "undefined" || color == null) {
       return;
     } else {
@@ -184,9 +180,8 @@ export default class App extends Component {
       data.data[(x + y * this.state.width) * 4 + 3] = 255;
     }
   };
-
   componentDidMount() {
-    window.onload = this.Init;
+    window.onload = this.Load;
   }
   render() {
     return (
@@ -203,7 +198,7 @@ export default class App extends Component {
           <h2 style={{ fontSize: "30px" }}>Coding Test</h2>
           <h6 style={{ fontSize: "15px" }}>Thank you for your patience :) </h6>
         </div>
-        <body onLoad="this.state.Init">
+        <body onload="this.Load">
           <canvas id="canvas" width="256" height="128"></canvas>
         </body>
       </div>
