@@ -1,8 +1,8 @@
 import logo from "./logo.svg";
 import "./App.css";
 import { Component } from "react";
+
 var grid, colors, currentPos;
-/*Needed Classes*/
 function Point(xIn, yIn) {
   this.x = xIn;
   this.y = yIn;
@@ -32,6 +32,7 @@ function Color(r, g, b) {
     this.saturation = (this.max - this.min) / (2 - this.max - this.min);
   }
 }
+
 export default class App extends Component {
   constructor(props) {
     super(props);
@@ -74,33 +75,14 @@ export default class App extends Component {
               (b * 255) / (this.state.colorSteps - 1)
             )
           );
-
           //Fill the array with all colors
         }
       }
     }
-    /*colors.sort(function(a,b)
-      {
-        if (a.r < b.r)
-                return 1;
-            if (a.r > b.r)
-                return -1;
-        if (a.g < b.g)
-                return -1;
-            if (a.g > b.g)
-                return 1;
-        if (a.b < b.b)
-                return -1;
-            if (a.b > b.b)
-                return 1;
-            return 0;
-      });*/
-
     for (var x = 0; x < this.state.width; x++) {
       grid.push(new Array());
       for (var y = 0; y < this.state.height; y++) {
         grid[x].push(0); //Set up the grid
-        //ChangePixel(imageData, x, y, colors[x + (y * width)]);
       }
     }
     currentPos = new Point(
@@ -119,13 +101,11 @@ export default class App extends Component {
     );
     setInterval(this.GameLoop, 1000 / this.state.FPS);
   };
-
   // Main program loop
   GameLoop = () => {
     this.Update();
     this.Draw();
   };
-
   // Game logic goes here
   Update = () => {
     if (!this.state.bDone) {
@@ -137,7 +117,6 @@ export default class App extends Component {
           var availableSpaces = this.CheckForSpaces(grid); //Find available spaces
           if (availableSpaces.length > 0) {
             //If there are available spaces
-
             this.setState({
               prevPositions: this.state.prevPositions.concat(currentPos),
             }); //add old position to prevPosition array
@@ -183,14 +162,11 @@ export default class App extends Component {
       this.state.ctx.canvas.width,
       this.state.ctx.canvas.height
     );
-
     this.state.ctx.putImageData(this.state.imageData, 0, 0);
   };
-
   CheckForSpaces = (inGrid) => {
     //Checks for available spaces then returns back all available spaces
     var availableSpaces = [];
-
     if (currentPos.x > 0) {
       if (inGrid[currentPos.x - 1][currentPos.y] == 0) {
         availableSpaces.push(new Point(currentPos.x - 1, currentPos.y));
@@ -239,7 +215,6 @@ export default class App extends Component {
   };
 
   componentDidMount() {
-    // window.addEventListener("load", this.handleLoad);
     window.onload = this.Init;
   }
   render() {
